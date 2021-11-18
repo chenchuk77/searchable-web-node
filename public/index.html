@@ -15,7 +15,7 @@
 
   <link rel="stylesheet" href="style2.css">
   <link rel="stylesheet" href="style_button.css">
-  <title>Matkonis</title>
+  <title>{{ nodejs_env.APP_NAME }}</title>
 </head>
 
 <body>
@@ -31,6 +31,7 @@
 <script>
 // global var used for debugging
 var global_matkonims = [];
+var global_nodejs_env = {};
 // global function to filter a list by match string
 function getListWithItemsContains(inputList, matchString){
   if (matchString === '') return [];
@@ -48,6 +49,7 @@ function getListWithItemsContains(inputList, matchString){
 // and then filter list locally by user choice
 var app = angular.module('myApp', []);
 app.controller('myCtrl', function($scope, $http, $window) {
+  $scope.nodejs_env={};
   $scope.matkonName="";
   $scope.matkonims = [];
   $scope.matkonimsFiltered = [];
@@ -61,6 +63,19 @@ app.controller('myCtrl', function($scope, $http, $window) {
   $scope.firstName= "John"; 
   $scope.lastName= "Doe";
   console.log("I've been pressed!");
+
+  $http.get("/env").then(
+    function successCallback(response) {
+      $scope.nodejs_env = response.data.nodejs_env;
+      global_nodejs_env = $scope.nodejs_env;
+      console.log("got " + Object.keys($scope.nodejs_env).length + " environment variables from api call to /env.");
+      console.log(response);
+    },
+    function errorCallback(response) {
+      console.log("Unable to perform get request to /env");
+    }
+  );
+
   $http.get("/list").then(
     function successCallback(response) {
       $scope.matkonims = response.data.matkonims;
@@ -69,9 +84,10 @@ app.controller('myCtrl', function($scope, $http, $window) {
       console.log(response);
     },
     function errorCallback(response) {
-      console.log("Unable to perform get request");
+      console.log("Unable to perform get request to /list");
     }
   );
+
 });
 </script>
 

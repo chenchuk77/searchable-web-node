@@ -22,6 +22,11 @@ fs.readdir(matkonimFolder, (err, files) => {
   });
 });
 
+// expose environment variables
+app.get('/env', (req, res) => {
+    res.json({ nodejs_env: process.env });
+});
+
 // expose matkonims for client side processing
 app.get('/list', (req, res) => {
     res.json({ matkonims: makonims });
