@@ -1,0 +1,67 @@
+#cloud-config
+# Add groups to the system
+# Adds the ubuntu group with members 'root' and 'sys'
+# and the empty group hashicorp.
+
+bootcmd:
+  - echo $(date +%s) > /tmp/start
+
+groups:
+  - ubuntu: [root,sys]
+  - hashicorp
+  - docker
+
+# Add default auto created user to docker group
+system_info:
+  default_user:
+    groups: [docker]
+
+
+# Add users to the system. Users are added after groups are added.
+users:
+  - default
+  - name: terraform
+    gecos: terraform
+    shell: /bin/bash
+    primary_group: hashicorp
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin, docker
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQClgo+uPRY/0Bhy4PuXYw9Cdgx/TqrOjFyTagHljn9AqBRIZFSCqiY/Loh7mrmdjLBEMOS8KmsgYJlqOk2ESrHUfYZl9gkP/OTIbu+3O/mLQfmfpyxQ8SBy7eCwSJOrcPSL8SuT4I6ZcqMzl7XXylaR6LJ/FkWZmpbx2L+cViGlAiU3acFi4lRr3wqKg9rkITGwF+yb8o+wgqv7DSMlHW7IkbsrG6Ds5wfa60vxUie81qzHvKqGlefjfsm8zRB/J7J98o04n8yeZ/F4X8yLumNh/J9IM2Z9Mgd2IJHvGHWpbCtfmYGz6NGRCIY+Vo3caCRGa25QHE+duHGfx5gzAa+ZH0BZfz3FRMvkWrDucX2/Ta3h18pqt2oZVfGM0uyDqcWu/BOwxSyZSHFvq4lfdjOy0WXtKnqHSCdaXNX3JL3Wzru1xqh6kR+fQ0vk6g+DKCSjWvKaUPbflfBfEwXAcf5ow6gvZH25tcU1JRDTSQ5qMkN7gpJV0YCThmIrw7TqaYM= your_email@example.com
+
+apt:
+  sources:
+    docker.list:
+      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+# Downloads the golang package
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
+# Enable ipv4 forwarding, required on CIS hardened machines
+write_files:
+  - path: /etc/sysctl.d/enabled_ipv4_forwarding.conf
+    content: |
+      net.ipv4.conf.all.forwarding=1
+
+
+# Sets the GOPATH & downloads the demo payload
+runcmd:
+  - sudo su terraform
+  - mkdir /home/terraform/searchable-web-node
+  - git clone https://github.com/chenchuk77/searchable-web-node.git /home/terraform/searchable-web-node
+  - docker build -q -t chenchuk77/serachable-web-node /home/terraform/searchable-web-node
+  - docker run --name matkonim-server -e "APP_NAME=MatkonimS" -p 80:8080 -d chenchuk77/serachable-web-node
+  - echo "done in $(expr $(date +%s) - $(cat /tmp/start)) seconds." >> /home/terraform/cloud-init.done
+
+
+

@@ -1,34 +1,35 @@
 terraform {
   required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "~> 2.13.0"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
     }
   }
+
+  required_version = ">= 0.14.9"
 }
 
-provider "docker" {}
-
-resource "docker_image" "serachable-web-node" {
-  name = "serachable-web-node"
-  build {
-    path = "."
-    tag  = ["serachable-web-node:develop"]
-    build_arg = {
-      foo : "zoo"
-    }
-    label = {
-      author : "zoo"
-    }
-  }
+provider "aws" {
+  profile = "chenal"
+  region  = "eu-west-1"
 }
 
-resource "docker_container" "matkonims-service" {
-  image = docker_image.serachable-web-node.latest
-  name  = "matkonims-terraform"
-  ports {
-    internal = 8080
-    external = 80
+
+data "template_file" "user_data" {
+  template = file("cloud-init.yml")
+}
+
+
+resource "aws_instance" "matkonim_server" {
+  ami           = "ami-08edbb0e85d6a0a07"
+  instance_type = "t2.micro"
+  user_data     = data.template_file.user_data.rendered
+
+  tags = {
+    Name        = var.instance_name
+    owner       = "chenal"
+    provisioned = "terraform"
+    usage       = "learn terraform"
+    deleteme    = "true"
   }
-  env = ["APP_NAME=MATKONIMS_TERRAFORM", "TEST_KEY=TEST_VAL"]
 }
