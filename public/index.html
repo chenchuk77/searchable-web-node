@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" ng-app="myApp" ng-controller="myCtrl"> 
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+
+<!--   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> --> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+  <link rel="stylesheet" href="style2.css">
+  <link rel="stylesheet" href="style_button.css">
+  <title>Matkonis</title>
+</head>
+
+<body>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+
+<!--<div id="tester"> list: {{ matkonimsFiltered }} </div> -->
+<script>
+// global var used for debugging
+var global_matkonims = [];
+// global function to filter a list by match string
+function getListWithItemsContains(inputList, matchString){
+  if (matchString === '') return [];
+  let outList = []
+  for (i in inputList){
+    item = inputList[i];
+    if (item.includes(matchString)){
+      outList.push(item);
+    }
+  }
+  return outList.sort();
+}
+
+// angular app that retrieve a list from server when connecting
+// and then filter list locally by user choice
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope, $http, $window) {
+  $scope.matkonName="";
+  $scope.matkonims = [];
+  $scope.matkonimsFiltered = [];
+  $scope.filterList = function (matchString) {
+    $scope.matkonimsFiltered = getListWithItemsContains($scope.matkonims, matchString);
+  };
+  $scope.openNewLink = function (matkonName) {
+    var matkonUrl = matkonName + '.html';
+    $window.open(matkonUrl, '_blank');
+  };
+  $scope.firstName= "John"; 
+  $scope.lastName= "Doe";
+  console.log("I've been pressed!");
+  $http.get("/list").then(
+    function successCallback(response) {
+      $scope.matkonims = response.data.matkonims;
+      global_matkonims = $scope.matkonims;
+      console.log("got " + $scope.matkonims.length + " matkonims from api call to /list.");
+      console.log(response);
+    },
+    function errorCallback(response) {
+      console.log("Unable to perform get request");
+    }
+  );
+});
+</script>
+
+<!-- <div id="filteredList"> {{ matkonimsFiltered }} </div> -->
+
+<!--
+<div id="search">
+חיפוש :
+<input type="text" lang="he" ng-model="matkonName" ng-keyup="filterList(matkonName)">
+
+
+</div>
+-->
+
+ <div class="main-search-input-wrap">
+     <div class="main-search-input fl-wrap">
+         <div class="main-search-input-item"> 
+           <input type="text" value="" placeholder="Search..." ng-model="matkonName" ng-keyup="filterList(matkonName)"> 
+	 </div> 
+	 <button class="main-search-button">Search</button>
+     </div>
+ </div>
+
+
+<div class="container d-flex justify-content-center">
+    <ul class="list-group mt-5 text-white">
+        <li class="list-group-item d-flex justify-content-between align-content-center" ng-repeat="matkon in matkonimsFiltered">
+            <div class="d-flex flex-row"> <img src="foodicon.png" width="40" />
+                <div class="ml-2">
+                  <h6 class="mb-0" ng-click="openNewLink(matkon)">{{ matkon }}</h6>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+
+<!--
+<div id="outlist">
+    <ol class "rounded-list">
+
+      <li ng-repeat="matkon in matkonimsFiltered">
+        <a ng-click="openNewLink(matkon)">{{ matkon }}</a>
+      </li>
+    </ol>
+</div>
+<div class="btn"><a href="http://www.akkatracker.com">Click Here to Visit my Blog</a>  </div>
+-->
+
+
+</body>
+</html>
+
