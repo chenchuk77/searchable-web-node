@@ -9,11 +9,11 @@ terraform {
 
 provider "docker" {}
 
-resource "docker_image" "serachable-web-node" {
-  name = "serachable-web-node"
+resource "docker_image" "searchable-web-node" {
+  name = "searchable-web-node"
   build {
-    path = "."
-    tag  = ["serachable-web-node:develop"]
+    path = "../"
+    tag  = ["searchable-web-node:develop"]
     build_arg = {
       foo : "zoo"
     }
@@ -24,7 +24,7 @@ resource "docker_image" "serachable-web-node" {
 }
 
 resource "docker_container" "matkonims-service" {
-  image = docker_image.serachable-web-node.latest
+  image = docker_image.searchable-web-node.latest
   name  = "matkonims-terraform"
   ports {
     internal = 8080
