@@ -9,8 +9,7 @@ docker rm matkonim-server   && echo "removing old matkonim-server instance" || e
 
 echo "starting a new matkonim-server"
 docker run --name matkonim-server \
-       -e "ENV1=fake_value" \
-       -e "APP_NAME=MatkonimS" \
+       -e "APP_NAME=MTK_MANUAL" \
        -p 80:8080 \
        -d chenchuk77/serachable-web-node
 
